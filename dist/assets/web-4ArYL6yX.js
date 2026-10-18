@@ -1,0 +1,1 @@
+import{p as e}from"./index-DxFksJ9p.js";var t=class extends e{async show(e){}async hide(e){}};export{t as SplashScreenWeb};

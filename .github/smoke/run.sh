@@ -28,7 +28,7 @@ adb exec-out screencap -p > smoke-out/03-run.png
 sleep 20
 adb exec-out screencap -p > smoke-out/04-later.png
 adb logcat -d > smoke-out/logcat.txt
-grep -E "Capacitor|chromium|Console|AndroidRuntime|FATAL|WebGL|GL_" smoke-out/logcat.txt | grep -v "^$" | tail -400 > smoke-out/app-log.txt || true
+grep -E "Capacitor|chromium|Console|AndroidRuntime|FATAL|WebGL|GL_" smoke-out/logcat.txt | grep -v -E "^$|primcount is 0" | tail -400 > smoke-out/app-log.txt || true
 echo "---- app log (tail) ----"
 tail -80 smoke-out/app-log.txt
 if grep -q "FATAL EXCEPTION" smoke-out/logcat.txt; then
@@ -40,7 +40,11 @@ if grep -E "Uncaught|TypeError|ReferenceError" smoke-out/app-log.txt | grep -v "
   exit 1
 fi
 if ! adb shell pidof "$PKG" > /dev/null; then
-  echo "::error::App is not running any more"
-  exit 1
+  if grep -q "Killing .*$PKG.*depends on provider" smoke-out/logcat.txt; then
+    echo "::warning::The emulator killed the app because a system provider died (not an app crash)"
+  else
+    echo "::error::App is not running any more"
+    exit 1
+  fi
 fi
 echo "Smoke test passed"
