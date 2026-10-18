@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Cliffbound</string>
+    <string name="title_activity_main">Cliffbound</string>
+    <string name="package_name">com.mulhimfy.cliffbound</string>
+    <string name="custom_url_scheme">com.mulhimfy.cliffbound</string>
+</resources>

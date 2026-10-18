@@ -1,0 +1,81 @@
+name: Android
+
+# Builds the signed release APK (sideload / GitHub release) and AAB (Google Play).
+# Push to main = test build (artifacts). Push a tag v* = GitHub release with the APK.
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+    paths-ignore: ['docs/**', 'README.md']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Capacitor plugins + web bundle into the native project
+        run: npm ci && npx cap sync android
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Upload key
+        env:
+          KEYSTORE_B64: ${{ secrets.CB_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/upload.p12"
+            echo "CB_KEYSTORE=$RUNNER_TEMP/upload.p12" >> "$GITHUB_ENV"
+          else
+            echo "::warning::No CB_KEYSTORE_B64 secret: the build is debug-signed."
+          fi
+      - name: Build APK + AAB
+        working-directory: android
+        env:
+          CB_KEYSTORE_PASSWORD: ${{ secrets.CB_KEYSTORE_PASSWORD }}
+          CB_VERSION_CODE: ${{ github.run_number }}
+        run: |
+          export CB_VERSION_NAME="$(node -p "require('../app.json').version")"
+          echo "Version $CB_VERSION_NAME ($CB_VERSION_CODE)"
+          chmod +x gradlew
+          ./gradlew assembleRelease bundleRelease --no-daemon --console=plain -q
+          cp app/build/outputs/apk/release/app-release.apk ../Cliffbound.apk
+          cp app/build/outputs/bundle/release/app-release.aab ../Cliffbound.aab
+          ls -l ../Cliffbound.apk ../Cliffbound.aab
+      - name: Check signature
+        run: |
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          "$APKSIGNER" verify --print-certs Cliffbound.apk | grep -i -E "certificate (DN|SHA-256)"
+          "$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)" dump badging Cliffbound.apk | grep -E "^(package|sdkVersion|targetSdkVersion|application-label):"
+      - name: Remove the key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/upload.p12"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cliffbound-android
+          path: |
+            Cliffbound.apk
+            Cliffbound.aab
+          if-no-files-found: error
+      - name: Publish release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" Cliffbound.apk \
+            --title "Cliffbound ${GITHUB_REF_NAME}" \
+            --notes-file RELEASE_NOTES.md --latest
