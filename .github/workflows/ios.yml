@@ -6,6 +6,11 @@ name: iOS TestFlight
 # Nothing is written to artifacts: secrets never leave the runner.
 on:
   workflow_dispatch:
+    inputs:
+      upload:
+        description: Upload to App Store Connect (off = archive, sign and export only, as a check)
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -70,14 +75,14 @@ jobs:
             > "$RUNNER_TEMP/archive.log" 2>&1 || true
           grep -E '^(error|\*\* )|error:' "$RUNNER_TEMP/archive.log" | head -40 || true
           test -d "$RUNNER_TEMP/Cliffbound.xcarchive" || { tail -60 "$RUNNER_TEMP/archive.log" | grep -v -i -E "key|token|password|secret"; exit 1; }
-      - name: Export and upload to App Store Connect
+      - name: Export (and upload to App Store Connect)
         run: |
           cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0"><dict>
             <key>method</key><string>app-store-connect</string>
-            <key>destination</key><string>upload</string>
+            <key>destination</key><string>${{ inputs.upload && 'upload' || 'export' }}</string>
             <key>teamID</key><string>$TEAM_ID</string>
             <key>signingStyle</key><string>automatic</string>
             <key>uploadSymbols</key><true/>
@@ -90,6 +95,7 @@ jobs:
             -authenticationKeyPath "$RUNNER_TEMP/keys/AuthKey.p8" \
             -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" 2>&1 | grep -v -i -E "authkey|token" | tail -30
           test ${PIPESTATUS[0]} -eq 0
+          ls -l "$RUNNER_TEMP/export" | grep -v -i -E "authkey" || true
       - name: Clean up signing material
         if: always()
         run: |
