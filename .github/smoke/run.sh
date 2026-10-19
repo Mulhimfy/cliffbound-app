@@ -51,12 +51,12 @@ if [ ! -s smoke-out/first.txt ] || [ "${ALARMS:-0}" -lt 1 ]; then
   adb logcat -d > smoke-out/logcat.txt
   exit 1
 fi
-# jump the clock to one minute after the first reminder: the alarm fires as it would that evening
+# jump the clock past the first reminder's 10-minute delivery window: it fires as it would that evening
 read -r DAY MIN < smoke-out/first.txt
 adb root > /dev/null 2>&1 || true
 adb wait-for-device
 adb shell settings put global auto_time 0
-STAMP=$(python3 -c "import sys; d,m=sys.argv[1],int(sys.argv[2])+1; y,mo,da=d.split('-'); print(f'{mo}{da}{m//60:02d}{m%60:02d}{y}.00')" "$DAY" "$MIN")
+STAMP=$(python3 -c "import sys; d,m=sys.argv[1],int(sys.argv[2])+1; y,mo,da=d.split('-'); print(f'{mo}{da}{m//60:02d}{m%60:02d}{y}.00')" "$DAY" "$((MIN + 11))")
 adb shell date "$STAMP" > /dev/null
 sleep 25
 adb shell dumpsys notification --noredact > smoke-out/notifications.txt

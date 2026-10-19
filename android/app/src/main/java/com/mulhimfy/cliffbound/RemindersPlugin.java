@@ -4,6 +4,8 @@ import android.Manifest;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import androidx.core.app.NotificationManagerCompat;
 import com.getcapacitor.JSArray;
@@ -17,6 +19,7 @@ import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Evening reminders with a picture, made on the phone: the game plans them (src/game/notify.ts),
@@ -109,7 +112,22 @@ public class RemindersPlugin extends Plugin {
             return;
         }
         try {
-            int n = ReminderScheduler.replaceAll(getContext(), new JSONArray(items.toString()));
+            JSONArray all = new JSONArray(items.toString());
+            JSONArray planned = new JSONArray();
+            int samples = 0;
+            for (int i = 0; i < all.length(); i++) {
+                JSONObject it = all.optJSONObject(i);
+                if (it == null) continue;
+                if (!it.optBoolean("test")) {
+                    planned.put(it);
+                    continue;
+                }
+                // a sample (Settings, 5 taps): seconds away, so no alarm window, just a timer
+                long delay = Math.max(0, it.optLong("at", 0) - System.currentTimeMillis());
+                new Handler(Looper.getMainLooper()).postDelayed(() -> ReminderReceiver.deliver(getContext(), it, () -> {}), delay);
+                samples++;
+            }
+            int n = ReminderScheduler.replaceAll(getContext(), planned) + samples;
             JSObject o = new JSObject();
             o.put("scheduled", n);
             call.resolve(o);

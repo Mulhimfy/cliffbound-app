@@ -31,17 +31,26 @@ public class ReminderReceiver extends BroadcastReceiver {
         if (late > it.optInt("window", 120) * 60_000L || late < -5 * 60_000L) return;
         int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
         if (!it.optBoolean("test") && (hour >= 23 || hour < 8)) return;
+        final PendingResult pending = goAsync();
+        deliver(ctx, it, pending::finish);
+    }
+
+    /** Shows a reminder now, filling in the day's numbers first if it has a live template. */
+    static void deliver(Context ctx, JSONObject it, Runnable done) {
         final JSONObject live = it.optJSONObject("live");
         if (live == null) {
-            ReminderNotifier.show(ctx, it, null);
+            try {
+                ReminderNotifier.show(ctx, it, null);
+            } finally {
+                done.run();
+            }
             return;
         }
-        final PendingResult pending = goAsync();
         new Thread(() -> {
             try {
                 ReminderNotifier.show(ctx, it, fill(live));
             } finally {
-                pending.finish();
+                done.run();
             }
         }, "cliffbound-reminder").start();
     }

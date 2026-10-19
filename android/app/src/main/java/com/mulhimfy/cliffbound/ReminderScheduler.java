@@ -11,8 +11,9 @@ import org.json.JSONObject;
 
 /**
  * Arms one alarm per reminder. A reminder names a local day and a minute of that day (so it follows
- * the phone into a new time zone), or an absolute `at` (tests). Alarms are inexact on purpose: no
- * exact-alarm permission, and Android still delivers them within the hour, usually within minutes.
+ * the phone into a new time zone), or an absolute `at` (tests). No exact-alarm permission: each
+ * reminder gets a 10-minute window alarm (on time whenever the phone is awake) and a Doze-proof
+ * backup a few minutes later; whichever fires first shows it, the other finds nothing left to show.
  */
 final class ReminderScheduler {
 
@@ -40,12 +41,17 @@ final class ReminderScheduler {
         }
     }
 
-    private static PendingIntent fireIntent(Context ctx, int id, int flags) {
+    /** Shortest window Android allows without exact alarms. */
+    private static final long WINDOW_MS = 10 * 60_000L;
+    /** The Doze-proof backup comes this much later. */
+    private static final long BACKUP_MS = 6 * 60_000L;
+
+    private static PendingIntent fireIntent(Context ctx, int id, boolean backup, int flags) {
         Intent i = new Intent(ctx, ReminderReceiver.class)
             .setAction(ACTION_FIRE)
-            .setData(Uri.parse("cliffbound://reminder/" + id))
+            .setData(Uri.parse("cliffbound://reminder/" + id + (backup ? "/backup" : "")))
             .putExtra("id", id);
-        return PendingIntent.getBroadcast(ctx, id, i, PendingIntent.FLAG_IMMUTABLE | flags);
+        return PendingIntent.getBroadcast(ctx, id * 2 + (backup ? 1 : 0), i, PendingIntent.FLAG_IMMUTABLE | flags);
     }
 
     /** Replaces every armed reminder with these; returns how many are still ahead and armed. */
@@ -77,14 +83,17 @@ final class ReminderScheduler {
     private static void arm(Context ctx, int id, long at) {
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
-        am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, fireIntent(ctx, id, PendingIntent.FLAG_UPDATE_CURRENT));
+        am.setWindow(AlarmManager.RTC_WAKEUP, at, WINDOW_MS, fireIntent(ctx, id, false, PendingIntent.FLAG_UPDATE_CURRENT));
+        am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at + BACKUP_MS, fireIntent(ctx, id, true, PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
     private static void disarm(Context ctx, int id) {
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
-        PendingIntent pi = fireIntent(ctx, id, PendingIntent.FLAG_NO_CREATE);
-        if (pi == null) return;
-        if (am != null) am.cancel(pi);
-        pi.cancel();
+        for (boolean backup : new boolean[] { false, true }) {
+            PendingIntent pi = fireIntent(ctx, id, backup, PendingIntent.FLAG_NO_CREATE);
+            if (pi == null) continue;
+            if (am != null) am.cancel(pi);
+            pi.cancel();
+        }
     }
 }
