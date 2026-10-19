@@ -36,12 +36,24 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
+        <!-- evening reminders (RemindersPlugin): alarm → picture notification; re-armed after reboot -->
+        <receiver android:name=".ReminderReceiver" android:exported="false" />
+        <receiver android:name=".ReminderBootReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
     </application>
 
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- reminders: show notifications (asked in the game first), re-arm them after a reboot -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- WebGL 2 (three.js) needs OpenGL ES 3.0 -->
     <uses-feature android:glEsVersion="0x00030000" android:required="true" />
 </manifest>

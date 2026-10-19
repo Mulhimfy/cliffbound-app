@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Privacy Policy · Cliffbound</title>
-  <meta name="description" content="Cliffbound collects no personal data: no accounts, no ads, no analytics, no tracking." />
+  <meta name="description" content="Cliffbound collects no personal data: no accounts, no ads, no analytics, no tracking. Daily climb stats are anonymous and optional." />
   <link rel="icon" href="icon.png" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -13,28 +13,40 @@
     <header class="top"><img src="icon.png" alt="" /><b>Cliffbound</b>
       <nav><a href="./">Game</a><a href="support.html">Support</a><a class="on" href="privacy.html">Privacy</a></nav>
     </header>
-    <div class="kicker">Effective October 18, 2026</div>
+    <div class="kicker">Effective October 19, 2026</div>
     <h2>Privacy policy</h2>
     <div class="doc">
-      <p class="tldr"><strong>In short:</strong> Cliffbound does not collect, share or sell any personal data. There are no accounts, no ads, no analytics and no tracking. Your progress stays on your device.</p>
+      <p class="tldr"><strong>In short:</strong> Cliffbound does not collect, share or sell any personal data. There are no accounts, no ads, no analytics and no tracking, and your progress stays on your device. The one thing the app sends is anonymous: the date and the height you reached in the daily climb, so everyone can see how that day's climbers did. You can switch it off in Settings.</p>
       <p>This policy explains how <strong>Cliffbound: Mountain Climbing</strong> (the "app"), a game for Android and iOS published by <strong>Mulhimfy</strong> ("we", "us"), handles information. It applies to every version of the app, including those on Google Play, the App Store and our website.</p>
       <h3>Information we collect</h3>
-      <p><strong>None.</strong> The app does not ask for your name, email address, phone number, location, contacts, photos, microphone, camera or any other personal information. It does not send information about you or your device to us or to anyone else. The app contains no advertising, analytics, crash-reporting, attribution or social SDKs, and it does not use advertising identifiers.</p>
+      <p><strong>No personal information.</strong> The app does not ask for your name, email address, phone number, location, contacts, photos, microphone, camera or any other personal information, and it does not send information about you or your device to us or to anyone else. The app contains no advertising, analytics, crash-reporting, attribution or social SDKs, and it does not use advertising identifiers.</p>
+      <h3>Daily climb stats (anonymous, optional)</h3>
+      <p>The daily climb is the same mountain for every player on a given day. So that the app can show how many climbers took it and how high they got ("1,204 climbers today · half reached 860 m"), it works like this:</p>
+      <ul>
+        <li>After you finish a daily climb, the app sends our stats server <strong>two things: the date of that daily climb and the height you reached</strong>, rounded down to 25 m. If you beat that height later the same day, it sends the better height (and the earlier rounded height, so you are still counted once).</li>
+        <li>Nothing else is sent: no account, no name, no device or advertising identifier, no location and nothing that links one result to another.</li>
+        <li>The server adds each result to that day's totals straight away (how many climbers ended in each 25 m band) and keeps only those totals, for 40 days. It does not store individual results or IP addresses. Like any internet request, the request itself reaches the server from your connection's IP address; the server only counts requests for a minute, in memory, to stop flooding.</li>
+        <li>To show the numbers, the app downloads that day's totals. On Android an evening reminder may fetch them too, just before it is shown.</li>
+      </ul>
+      <p>The server runs on Cloudflare Workers, operated by us. To stop sending and downloading daily stats, switch off <strong>Settings → Daily climb stats</strong>; the game then makes no network requests at all.</p>
+      <h3>Reminders</h3>
+      <p>If you allow it, the app shows at most one reminder a day, in the evening, about the daily climb, your streak or your next summit. Reminders are put together on your phone from your own progress and scheduled by your phone; there is no push service, no notification token and nothing is sent to us to make them. Switch them off in <strong>Settings → Evening reminders</strong> or in your phone's notification settings.</p>
       <h3>Information stored on your device</h3>
       <p>To remember your game, the app saves the following <strong>only on your device</strong>:</p>
       <ul>
         <li>your progress: best altitude, crystals, summits reached and daily streak;</li>
         <li>the climbers you unlocked and the one you play with;</li>
         <li>your missions and rank;</li>
-        <li>your settings: sound, vibration and graphics quality.</li>
+        <li>your settings: sound, vibration, graphics quality, reminders and daily stats;</li>
+        <li>for reminders: the times of day you usually start a climb, and the day of your last climb.</li>
       </ul>
-      <p>This data never leaves your device through the app. It is deleted when you uninstall the app, clear its data, or choose <strong>Settings → Reset progress</strong>. Your phone's own backup service (Google or iCloud backup) may include it in backups that you control; we have no access to those.</p>
+      <p>Apart from the anonymous daily climb height described above, this data never leaves your device through the app. It is deleted when you uninstall the app, clear its data, or choose <strong>Settings → Reset progress</strong>. Your phone's own backup service (Google or iCloud backup) may include it in backups that you control; we have no access to those.</p>
       <h3>Permissions</h3>
-      <p>On Android the app uses the <strong>vibration</strong> permission for haptic feedback (you can turn it off in Settings) and standard network access, which the app's web engine requires; the game itself works fully offline and makes no network requests during play. The app keeps the screen awake while you climb. It requests no other permissions.</p>
+      <p>On Android the app uses the <strong>vibration</strong> permission for haptic feedback (you can turn it off in Settings), <strong>notifications</strong> for evening reminders (asked only after you choose to turn them on), permission to <strong>run at startup</strong> so planned reminders survive a restart of your phone, and network access for the daily climb stats. The game itself plays fully offline. The app keeps the screen awake while you climb. It requests no other permissions. On iOS the app asks for notification permission only after you choose to turn reminders on.</p>
       <h3>Children</h3>
-      <p>The app is suitable for all ages and does not knowingly collect personal information from anyone, including children under 13 (or the equivalent minimum age in your country). Because no data is collected, there is nothing to access, correct or delete on our side.</p>
+      <p>The app is suitable for all ages and does not knowingly collect personal information from anyone, including children under 13 (or the equivalent minimum age in your country). Because the only data we hold is anonymous daily totals that cannot be linked to anyone, there is nothing to access, correct or delete on our side.</p>
       <h3>Third parties</h3>
-      <p>We do not share data with third parties, because we do not have any. If you download the app from Google Play or the App Store, those stores handle the download under their own privacy policies.</p>
+      <p>We do not sell or share data with third parties. Cloudflare hosts the daily stats server for us and processes its requests under its own terms. If you download the app from Google Play or the App Store, those stores handle the download under their own privacy policies.</p>
       <h3>Links</h3>
       <p>The Settings screen links to this page and to our support page. These open in your browser, which applies its own privacy practices.</p>
       <h3>Changes</h3>
