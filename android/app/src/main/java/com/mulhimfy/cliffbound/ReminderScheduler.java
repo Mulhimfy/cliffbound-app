@@ -41,8 +41,9 @@ final class ReminderScheduler {
         }
     }
 
-    /** Shortest window Android allows without exact alarms. */
+    /** Shortest window Android allows without exact alarms, centred on the planned minute. */
     private static final long WINDOW_MS = 10 * 60_000L;
+    static final long EARLY_MS = WINDOW_MS / 2;
     /** The Doze-proof backup comes this much later. */
     private static final long BACKUP_MS = 6 * 60_000L;
 
@@ -67,7 +68,7 @@ final class ReminderScheduler {
             JSONObject it = items.optJSONObject(i);
             if (it == null || !it.has("id")) continue;
             long at = triggerAt(it);
-            if (at <= now) continue;
+            if (at - EARLY_MS <= now) continue;
             keep.put(it);
             arm(ctx, it.optInt("id"), at);
         }
@@ -83,7 +84,7 @@ final class ReminderScheduler {
     private static void arm(Context ctx, int id, long at) {
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
-        am.setWindow(AlarmManager.RTC_WAKEUP, at, WINDOW_MS, fireIntent(ctx, id, false, PendingIntent.FLAG_UPDATE_CURRENT));
+        am.setWindow(AlarmManager.RTC_WAKEUP, at - EARLY_MS, WINDOW_MS, fireIntent(ctx, id, false, PendingIntent.FLAG_UPDATE_CURRENT));
         am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at + BACKUP_MS, fireIntent(ctx, id, true, PendingIntent.FLAG_UPDATE_CURRENT));
     }
 

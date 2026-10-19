@@ -28,7 +28,7 @@ public class ReminderReceiver extends BroadcastReceiver {
         if (it == null) return;
         long late = System.currentTimeMillis() - ReminderScheduler.triggerAt(it);
         // delivered hours late (phone off, deep sleep) or in the middle of the night: drop it
-        if (late > it.optInt("window", 120) * 60_000L || late < -5 * 60_000L) return;
+        if (late > it.optInt("window", 120) * 60_000L || late < -ReminderScheduler.EARLY_MS - 60_000L) return;
         int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
         if (!it.optBoolean("test") && (hour >= 23 || hour < 8)) return;
         final PendingResult pending = goAsync();
