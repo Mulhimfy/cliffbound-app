@@ -1,0 +1,1 @@
+import{A as e}from"./index-BK5_g-oZ.js";var t=class extends e{async show(e){}async hide(e){}};export{t as SplashScreenWeb};
