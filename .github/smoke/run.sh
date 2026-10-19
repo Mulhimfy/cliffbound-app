@@ -34,44 +34,63 @@ adb shell input keyevent KEYCODE_HOME
 sleep 4
 adb shell run-as "$PKG" cat shared_prefs/cliffbound.reminders.xml > smoke-out/reminders.xml 2>/dev/null || true
 echo "---- planned reminders ----"
-python3 - <<'PY2' | tee smoke-out/reminders.txt
+python3 - <<'PY2'
 import html, json, re
 raw = open('smoke-out/reminders.xml').read()
 m = re.search(r'<string name="items">(.*?)</string>', raw, re.S)
 items = json.loads(html.unescape(m.group(1))) if m else []
-for it in items:
-    print(f"{it['day']} {it['minute'] // 60:02d}:{it['minute'] % 60:02d} [{it['channel']}] {it['title']} | {it['body']} | {it['picture']} -> {it['route']}{' (live)' if it.get('live') else ''}")
-if items:
-    open('smoke-out/first.txt', 'w').write(f"{items[0]['day']} {items[0]['minute']}")
+with open('smoke-out/items.tsv', 'w') as f:
+    for it in items:
+        print(f"{it['day']} {it['minute'] // 60:02d}:{it['minute'] % 60:02d} [{it['channel']}] {it['title']} | {it['body']} | {it['picture']} -> {it['route']}{' (live)' if it.get('live') else ''}")
+        f.write(f"{it['id']}\t{it['day']}\t{it['minute']}\t{it['title']}\n")
 PY2
-ALARMS=$(adb shell dumpsys alarm | grep -c "$PKG" || true)
+adb shell dumpsys alarm > smoke-out/alarms-before.txt
+ALARMS=$(grep -c "$PKG" smoke-out/alarms-before.txt || true)
 echo "armed reminder alarms: $ALARMS"
-if [ ! -s smoke-out/first.txt ] || [ "${ALARMS:-0}" -lt 1 ]; then
+if [ "$(wc -l < smoke-out/items.tsv)" -lt 2 ] || [ "${ALARMS:-0}" -lt 2 ]; then
   echo "::error::No reminders were planned / armed"
   adb logcat -d > smoke-out/logcat.txt
   exit 1
 fi
-# jump the clock past the first reminder's 10-minute delivery window: it fires as it would that evening
-read -r DAY MIN < smoke-out/first.txt
+stamp() { python3 -c "import sys; d,s=sys.argv[1],int(sys.argv[2]); y,mo,da=d.split('-'); print(f'{mo}{da}{s//3600:02d}{s//60%60:02d}{y}.{s%60:02d}')" "$1" "$2"; }
+shown() { adb shell dumpsys notification --noredact > smoke-out/notifications.txt; grep -F "android.title=String ($1)" smoke-out/notifications.txt > /dev/null; }
 adb root > /dev/null 2>&1 || true
 adb wait-for-device
 adb shell settings put global auto_time 0
-STAMP=$(python3 -c "import sys; d,m=sys.argv[1],int(sys.argv[2])+1; y,mo,da=d.split('-'); print(f'{mo}{da}{m//60:02d}{m%60:02d}{y}.00')" "$DAY" "$((MIN + 11))")
-adb shell date "$STAMP" > /dev/null
-sleep 25
-adb shell dumpsys notification --noredact > smoke-out/notifications.txt
-if ! grep -q "pkg=$PKG" smoke-out/notifications.txt; then
-  echo "::error::The reminder did not show"
+# A · the notification: at the first reminder's time, its receiver shows it with its picture
+IFS=$'\t' read -r ID1 DAY1 MIN1 TITLE1 < <(sed -n 1p smoke-out/items.tsv)
+adb shell date "$(stamp "$DAY1" $((MIN1 * 60 + 60)))" > /dev/null
+adb shell am set-standby-bucket "$PKG" active
+adb shell am broadcast -n "$PKG/.ReminderReceiver" -a com.mulhimfy.cliffbound.REMINDER_FIRE --ei id "$ID1" > /dev/null
+sleep 12
+if ! shown "$TITLE1"; then
+  echo "::error::The reminder did not show: $TITLE1"
   adb logcat -d > smoke-out/logcat.txt
   exit 1
 fi
-grep -E "android.title=|android.text=|BigPictureStyle|android.picture" smoke-out/notifications.txt | grep -v -i "token" | head -8
+echo "shown: $TITLE1"
+grep -E "android.template=|android.picture=" smoke-out/notifications.txt | head -3
 grep -q "BigPictureStyle" smoke-out/notifications.txt || echo "::warning::Reminder shown without its picture"
 adb shell cmd statusbar expand-notifications
 sleep 3
 adb exec-out screencap -p > smoke-out/05-reminder.png
 adb shell cmd statusbar collapse
-# a tap on it opens the screen it talks about
+# B · the alarm: 20 s before the next reminder, Android itself must deliver it (window: 10 min)
+IFS=$'\t' read -r ID2 DAY2 MIN2 TITLE2 < <(sed -n 2p smoke-out/items.tsv)
+adb shell date "$(stamp "$DAY2" $((MIN2 * 60 - 20)))" > /dev/null
+adb shell am set-standby-bucket "$PKG" active
+OK=0
+for i in $(seq 1 48); do
+  sleep 15
+  if shown "$TITLE2"; then OK=1; echo "alarm delivered after ~$((i * 15)) s: $TITLE2"; break; fi
+done
+if [ "$OK" != 1 ]; then
+  adb shell dumpsys alarm > smoke-out/alarms-after.txt
+  echo "::error::The alarm for the next reminder never fired: $TITLE2"
+  adb logcat -d > smoke-out/logcat.txt
+  exit 1
+fi
+# a tap on a reminder opens the screen it talks about
 adb shell am start -n "$PKG/.MainActivity" -a com.mulhimfy.cliffbound.REMINDER_OPEN --es cb_route daily > /dev/null
 sleep 8
 adb exec-out screencap -p > smoke-out/06-from-reminder.png
