@@ -102,7 +102,9 @@ if grep -q "FATAL EXCEPTION" smoke-out/logcat.txt; then
   echo "::error::Native crash"
   exit 1
 fi
-if grep -E "Uncaught|TypeError|ReferenceError" smoke-out/app-log.txt | grep -v "favicon"; then
+# Capacitor's SystemBars catches its own early safe-area injection (an inset change while the page is
+# still loading) and logs it; the CSS falls back to env(safe-area-inset-*), so that line is not an app error.
+if grep -E "Uncaught|TypeError|ReferenceError" smoke-out/app-log.txt | grep -v "favicon" | grep -v "Error injecting safe area CSS"; then
   echo "::error::JavaScript error in the WebView"
   exit 1
 fi
