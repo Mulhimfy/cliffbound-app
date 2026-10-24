@@ -13,13 +13,13 @@
     <header class="top"><img src="icon.png" alt="" /><b>Cliffbound</b>
       <nav><a href="./">Game</a><a href="support.html">Support</a><a class="on" href="privacy.html">Privacy</a></nav>
     </header>
-    <div class="kicker">Effective October 19, 2026</div>
+    <div class="kicker">Effective October 24, 2026</div>
     <h2>Privacy policy</h2>
     <div class="doc">
-      <p class="tldr"><strong>In short:</strong> Cliffbound does not collect, share or sell any personal data. There are no accounts, no ads, no analytics and no tracking, and your progress stays on your device. The one thing the app sends is anonymous: the date and the height you reached in the daily climb, so everyone can see how that day's climbers did. You can switch it off in Settings.</p>
+      <p class="tldr"><strong>In short:</strong> Cliffbound does not collect, share or sell any personal data. There are no accounts of ours, no ads, no analytics and no tracking, and your progress stays on your device. The one thing the app sends to us is anonymous: the date and the height you reached in the daily climb, so everyone can see how that day's climbers did. You can switch it off in Settings. On Android, if you use Google Play Games, your achievements and leaderboard scores go to Google under your Play Games profile.</p>
       <p>This policy explains how <strong>Cliffbound: Mountain Climbing</strong> (the "app"), a game for Android and iOS published by <strong>Mulhimfy</strong> ("we", "us"), handles information. It applies to every version of the app, including those on Google Play, the App Store and our website.</p>
       <h3>Information we collect</h3>
-      <p><strong>No personal information.</strong> The app does not ask for your name, email address, phone number, location, contacts, photos, microphone, camera or any other personal information, and it does not send information about you or your device to us or to anyone else. The app contains no advertising, analytics, crash-reporting, attribution or social SDKs, and it does not use advertising identifiers.</p>
+      <p><strong>No personal information.</strong> The app does not ask for your name, email address, phone number, location, contacts, photos, microphone, camera or any other personal information, and it does not send information about you or your device to us or to anyone else. Apart from Google Play Games on Android (below), the app contains no advertising, analytics, crash-reporting, attribution or social SDKs, and it does not use advertising identifiers.</p>
       <h3>Daily climb stats (anonymous, optional)</h3>
       <p>The daily climb is the same mountain for every player on a given day. So that the app can show how many climbers took it and how high they got ("1,204 climbers today · half reached 860 m"), it works like this:</p>
       <ul>
@@ -28,7 +28,9 @@
         <li>The server adds each result to that day's totals straight away (how many climbers ended in each 25 m band) and keeps only those totals, for 40 days. It does not store individual results or IP addresses. Like any internet request, the request itself reaches the server from your connection's IP address; the server only counts requests for a minute, in memory, to stop flooding.</li>
         <li>To show the numbers, the app downloads that day's totals. On Android an evening reminder may fetch them too, just before it is shown.</li>
       </ul>
-      <p>The server runs on Cloudflare Workers, operated by us. To stop sending and downloading daily stats, switch off <strong>Settings → Daily climb stats</strong>; the game then makes no network requests at all.</p>
+      <p>The server runs on Cloudflare Workers, operated by us. To stop sending and downloading daily stats, switch off <strong>Settings → Daily climb stats</strong>; the game itself then makes no network requests (Google Play Games, if you use it, talks to Google as described below).</p>
+      <h3>Google Play Games (Android, optional)</h3>
+      <p>On Android the app uses <strong>Google Play Games Services</strong> for achievements and leaderboards. If you have a Play Games profile, Google signs you in when the game starts (you can decline, or sign in later from <strong>Trophies</strong> on the home screen). While you are signed in, the app sends Google the achievements you unlock (summits, stars, climbers and similar milestones) and your scores for the leaderboards: the height of each climb, the total metres climbed and the crystals collected. Google shows them on your Play Games profile and on the leaderboards with your Play Games name and avatar, following the visibility you chose in Play Games, and the Play Games SDK also collects diagnostics to keep the service working. This data is handled by Google under the <a href="https://policies.google.com/privacy">Google Privacy Policy</a>; we only see aggregate statistics and the public leaderboards. You can delete your Play Games data for this game, or your whole Play Games profile, in the Play Games app or your Google Account. The iOS version does not use Play Games.</p>
       <h3>Reminders</h3>
       <p>If you allow it, the app shows at most one reminder a day, in the evening, about the daily climb, your streak or your next summit. Reminders are put together on your phone from your own progress and scheduled by your phone; there is no push service, no notification token and nothing is sent to us to make them. Switch them off in <strong>Settings → Evening reminders</strong> or in your phone's notification settings.</p>
       <h3>Information stored on your device</h3>
@@ -46,7 +48,7 @@
       <h3>Children</h3>
       <p>The app is suitable for all ages and does not knowingly collect personal information from anyone, including children under 13 (or the equivalent minimum age in your country). Because the only data we hold is anonymous daily totals that cannot be linked to anyone, there is nothing to access, correct or delete on our side.</p>
       <h3>Third parties</h3>
-      <p>We do not sell or share data with third parties. Cloudflare hosts the daily stats server for us and processes its requests under its own terms. If you download the app from Google Play or the App Store, those stores handle the download under their own privacy policies.</p>
+      <p>We do not sell or share data with third parties. Cloudflare hosts the daily stats server for us and processes its requests under its own terms. Google runs Google Play Games (Android) as described above. If you download the app from Google Play or the App Store, those stores handle the download under their own privacy policies.</p>
       <h3>Links</h3>
       <p>The Settings screen links to this page and to our support page. These open in your browser, which applies its own privacy practices.</p>
       <h3>Changes</h3>
